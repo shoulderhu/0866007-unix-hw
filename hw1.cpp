@@ -93,9 +93,9 @@ string get_cmdline_by_pid(const int pid) {
     size_t pos;
 
     if (ifs.is_open()) {
-        getline(ifs, str, '\0');
-        if ((pos = str.find_last_of('/')) != string::npos) {
-            s =  str.substr(pos + 1);
+        getline(ifs, s, '\0');
+        if ((pos = s.find_last_of('/')) != string::npos) {
+            s = s.substr(pos + 1);
         }
 
         while (getline(ifs, str, '\0')) {
