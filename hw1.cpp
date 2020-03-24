@@ -277,20 +277,23 @@ int main(int argc, char *argv[]) {
 
     // Process filter-string option
     argc -= optind;
-    switch (argc) {
-        case 0:
-            flag_string = false;
-            break;
-        case 1:
-            argv += optind;
-            flag_string = true;
-            if (regcomp(&regex, argv[0], 0) != 0) {
-                fprintf(stderr, "regcomp: \n");
-                exit(EXIT_FAILURE);
-            }
-            break;
-        default:
-            flag_usage = true;
+    if (argc == 0) {
+        flag_string = false;
+    } else {
+        flag_string = true;
+        argv += optind;
+
+        char arg[4096] = "";
+        strcpy(arg, argv[0]);
+        for (int i = 1; i < argc; ++i) {
+            strcpy(arg, " ");
+            strcpy(arg, argv[i]);
+        }
+
+        if (regcomp(&regex, arg, 0) != 0) {
+            fprintf(stderr, "regcomp: \n");
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (flag_usage) {
