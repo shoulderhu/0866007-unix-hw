@@ -1,6 +1,6 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -Wall
+CFLAGS = -std=c++11 -g -Wall
 
 all: hw1
 

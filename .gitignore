@@ -5,3 +5,4 @@ CMakeLists.txt
 *.o
 
 test*
+hw1*
