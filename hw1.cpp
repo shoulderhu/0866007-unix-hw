@@ -72,6 +72,14 @@ int get_pid_by_inode(const int inode) {
                             closedir(dirp_proc);
                             return atoi(ent_proc->d_name);
                         }
+                    } else if (strstr(buf, "[0000]:")) {
+                        sscanf(buf, "[0000]:%d", &socket_inode);
+
+                        if (inode == socket_inode) {
+                            closedir(dirp_fd);
+                            closedir(dirp_proc);
+                            return atoi(ent_proc->d_name);
+                        }
                     }
                 }
             }
