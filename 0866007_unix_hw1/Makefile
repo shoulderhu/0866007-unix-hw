@@ -14,3 +14,4 @@ clean:
 	rm -rf hw1.o hw1
 
 .PHONY: all clean
+

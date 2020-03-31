@@ -1,11 +1,8 @@
 .idea
-cmake-build-debug
+cmake-build-debug/
 CMakeLists.txt
 
-*.o
-
-test*
-hw1*
-
-0866007_unix_hw1
-0866007_unix_hw1.tar.gz
+0866007_unix_hw1/hw1.o
+0866007_unix_hw1/hw1
+0866007_unix_hw1/test*
+0866007_unix_hw1/*.tar.gz
