@@ -1,14 +1,14 @@
 #include <cstdio>   // fprintf()
-#include <cstdlib>  // exit()
+#include <cstdlib>  // exit(), setenv(), free()
 #include <cstring>  // strdup()
-#include <unistd.h> // getopt()
+#include <unistd.h> // getopt(), execvp()
 
 int main(int argc, char *argv[]) {
     int opt;
     char *sopath = strdup("./sandbox.so");
     char *basedir = strdup(".");
 
-    while ((opt = getopt(argc, argv, "p:d:-")) != -1) {
+    while ((opt = getopt(argc, argv, "p:d:")) != -1) {
         switch (opt) {
             case 'p':
                 free(sopath);
@@ -17,9 +17,6 @@ int main(int argc, char *argv[]) {
             case 'd':
                 free(basedir);
                 basedir = strdup(optarg);
-                break;
-            case '-':
-                printf("--\n");
                 break;
             case '?':
             case ':':
@@ -40,17 +37,16 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    execvp(argv[0], argv);
+    setenv("LD_PRELOAD", sopath, 1);
+    free(sopath);
 
-    /*
-    for (int i = 0; i < argc; ++i) {
-        printf("argv[%d] = %s\n", optind + i, argv[i]);
+    setenv("BASEDIR", basedir, 1);
+    free(basedir);
+
+    if (execvp(argv[0], argv) == -1) {
+        perror("execvp()");
+        exit(EXIT_FAILURE);
     }
 
-    printf("%s %s\n", sopath, basedir);
-     */
-
-    free(sopath);
-    free(basedir);
     return 0;
 }
