@@ -6,3 +6,8 @@ CMakeLists.txt
 0866007_unix_hw1/hw1
 0866007_unix_hw1/test*
 0866007_unix_hw1/*.tar.gz
+
+0866007_unix_hw2/sandbox.o
+0866007_unix_hw2/sandbox
+0866007_unix_hw2/sandbox.so
+0866007_unix_hw2/sandboxso.o
