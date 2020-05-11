@@ -78,7 +78,7 @@ bool get_access(const char *func, const char *name) {
 
     if (strncmp(pattern, buf, strlen(pattern)) != 0) {
         fprintf(stderr, "[%s] %s: access to %s is not allowed\n", prefix, func, name);
-        errno = EACCES;
+        // serrno = EACCES;
         return false;
     }
 
