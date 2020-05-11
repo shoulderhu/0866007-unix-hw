@@ -1,14 +1,13 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>     // fprintf(), realpath()
 #include <stdlib.h>    // exit(), getenv()
 #include <stdbool.h>   // bool
-#include <string.h>    //
+#include <string.h>    // strcmp(), strncmp()
 #include <errno.h>     // errno
-#include <regex.h>     // regexcomp(), regexec()
-#include <stdarg.h>
 #include <dlfcn.h>     // dlopen(), dlsym(), dlerror(), dlclose()
-#include <dirent.h>
+#include <dirent.h>    // DIR
 #include <err.h>       // errx()
-#include <sys/types.h>
 #include <sys/stat.h>  // struct stat
 
 #ifdef DEBUG
@@ -17,7 +16,6 @@
 #define DEBUG(...)
 #endif
 
-regex_t regex;
 char pattern[1024], prefix[] = "sandbox";
 
 void *handle;
@@ -44,21 +42,19 @@ __attribute__((constructor)) static void constructor() {
         errx(EXIT_FAILURE, "%s: %s", "dlopen()", dlerror());
     }
 
-    // printf("%s\n", getenv("BASEDIR"));
-    if (realpath(getenv("BASEDIR"), pattern + 1) == NULL) {
-        perror("realpath()");
-        exit(EXIT_FAILURE);
+    if ((__xstat_original = dlsym(handle, "__xstat")) == NULL) {
+        errx(EXIT_FAILURE, "%s: %s", "__xstat()", dlerror());
     }
 
-    pattern[0] = '^';
-    // pattern[strlen(pattern)] = '/';
+    // printf("%s\n", getenv("BASEDIR"));
 
-    if (regcomp(&regex, pattern, 0) != 0) {
-        fprintf(stderr, "regcomp()\n");
-        exit(EXIT_FAILURE);
+    realpath(getenv("BASEDIR"), pattern);
+    if (strcmp(pattern, "/") != 0) {
+        pattern[strlen(pattern)] = '/';
     }
 
     // printf("%s\n", pattern);
+    printf("Done\n");
 }
 
 __attribute__((destructor)) static void destructor() {
@@ -67,10 +63,23 @@ __attribute__((destructor)) static void destructor() {
 }
 
 bool get_access(const char *func, const char *name) {
-    char buf[1024];
+    if (strlen(pattern) == 0) {
+        return true;
+    }
 
+    struct stat s;
+    __xstat_original(1, name, &s);
+
+    char buf[1024];
     realpath(name, buf);
-    if (regexec(&regex, buf, 0, NULL, 0) != 0) {
+
+    if (S_ISDIR(s.st_mode)) {
+        if (strcmp(buf, "/") != 0) {
+            buf[strlen(buf)] = '/';
+        }
+    }
+
+    if (strncmp(pattern, buf, strlen(pattern)) != 0) {
         fprintf(stderr, "[%s] %s: access to %s is not allowed\n", prefix, func, name);
         errno = EACCES;
         return false;
@@ -156,23 +165,17 @@ FILE *fopen(const char *pathname, const char *mode) { // Done
     // fopen(argv[1], "r+");
 
     if (fopen_original == NULL) {
-        printf("null1111111111\n");
-        if ((fopen_original = dlsym(handle, __func__)) == NULL) {
+        if ((fopen_original = dlsym(RTLD_NEXT, __func__)) == NULL) {
             errx(EXIT_FAILURE, "%s : %s", "fopen()", dlerror());
-        }
-        if (fopen_original != NULL) {
-            printf("null11111111111111111111111\n");
         }
     }
 
-    //DEBUG("[%s] %s %s %s\n", prefix, __func__, pathname, mode);
-    FILE *fp = fopen_original(pathname, mode);
-    //if (!get_access(__func__, pathname)) {
-    //    return NULL;
-    //}
+    if (!get_access(__func__, pathname)) {
+        return NULL;
+    }
 
     DEBUG("[%s] %s %s %s\n", prefix, __func__, pathname, mode);
-    return fp;
+    return fopen_original(pathname, mode);
 }
 
 int link(const char *oldpath, const char *newpath) { // Done
