@@ -11,3 +11,6 @@ CMakeLists.txt
 0866007_unix_hw2/sandbox
 0866007_unix_hw2/sandbox.so
 0866007_unix_hw2/sandboxso.o
+0866007_unix_hw2/sample.o
+0866007_unix_hw2/sample1
+0866007_unix_hw2/sample2
