@@ -54,7 +54,6 @@ __attribute__((constructor)) static void constructor() {
     }
 
     // printf("%s\n", pattern);
-    printf("Done\n");
 }
 
 __attribute__((destructor)) static void destructor() {
@@ -73,10 +72,8 @@ bool get_access(const char *func, const char *name) {
     char buf[1024];
     realpath(name, buf);
 
-    if (S_ISDIR(s.st_mode)) {
-        if (strcmp(buf, "/") != 0) {
-            buf[strlen(buf)] = '/';
-        }
+    if (S_ISDIR(s.st_mode) && strcmp(buf, "/") != 0) {
+        buf[strlen(buf)] = '/';
     }
 
     if (strncmp(pattern, buf, strlen(pattern)) != 0) {
@@ -107,8 +104,8 @@ int chdir(const char *path) { // Done
 }
 
 int chmod(const char *pathname, mode_t mode) { // Done
-    // TEST: ./sandbox ./test /etc/passwd 777
-    // chmod(argv[1], argv[2]);
+    // TEST: ./sandbox ./test /etc/passwd
+    // chmod(argv[1], 0777);
 
     if (chmod_original == NULL) {
         if ((chmod_original = dlsym(handle, __func__)) == NULL) {
@@ -188,7 +185,8 @@ int link(const char *oldpath, const char *newpath) { // Done
         }
     }
 
-    if (!get_access(__func__, newpath)) {
+    if (!get_access(__func__, oldpath) ||
+        !get_access(__func__, newpath)) {
         return -1;
     }
 
@@ -210,7 +208,7 @@ int mkdir(const char *pathname, mode_t mode) { // Done
         return -1;
     }
 
-    // printf("[%s] %s %s %d\n", prefix, __func__, pathname, mode);
+    DEBUG("[%s] %s %s %d\n", prefix, __func__, pathname, mode);
     return mkdir_original(pathname, mode);
 }
 
@@ -311,7 +309,8 @@ int rename(const char *oldpath, const char *newpath) { // Done
         }
     }
 
-    if (!get_access(__func__, oldpath)) {
+    if (!get_access(__func__, oldpath) ||
+        !get_access(__func__, newpath)) {
         return -1;
     }
 
@@ -320,7 +319,7 @@ int rename(const char *oldpath, const char *newpath) { // Done
 }
 
 int rmdir(const char *pathname) { // Done
-    // TEST: ./sandbox mv rmdir /tmp
+    // TEST: ./sandbox rmdir /tmp
 
     if (rmdir_original == NULL) {
         if ((rmdir_original = dlsym(handle, __func__)) == NULL) {
@@ -338,7 +337,7 @@ int rmdir(const char *pathname) { // Done
 
 int __xstat(int ver, const char *path, struct stat *stat_buf) {
     // TEST: ./sandbox ./test /etc/passwd
-    // __xstat(3, argv[1], &stat);
+    // __xstat(1, argv[1], &stat);
 
     if (__xstat_original == NULL) {
         if ((__xstat_original = dlsym(handle, __func__)) == NULL) {
@@ -355,8 +354,8 @@ int __xstat(int ver, const char *path, struct stat *stat_buf) {
 }
 
 int symlink(const char *target, const char *linkpath) { // Done
-    // TEST: ./sandbox ./test
-    // symlink("/etc/passwd", "pass")
+    // TEST: ./sandbox ./test /etc/passwd
+    // symlink(argv[1], "pass");
 
     if (symlink_original == NULL) {
         if ((symlink_original = dlsym(handle, __func__)) == NULL) {
@@ -364,7 +363,8 @@ int symlink(const char *target, const char *linkpath) { // Done
         }
     }
 
-    if (!get_access(__func__, target)) {
+    if (!get_access(__func__, target) ||
+        !get_access(__func__, linkpath)) {
         return -1;
     }
 
@@ -373,7 +373,7 @@ int symlink(const char *target, const char *linkpath) { // Done
 }
 
 int unlink(const char *pathname) { // Done
-    // TEST: ./sandbox mv unlink /etc/passwd
+    // TEST: ./sandbox unlink /etc/passwd
 
     if (unlink_original == NULL) {
         if ((unlink_original = dlsym(handle, __func__)) == NULL) {
