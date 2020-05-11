@@ -2,6 +2,7 @@
 #include <cstdlib>  // exit(), setenv(), free()
 #include <cstring>  // strdup()
 #include <unistd.h> // getopt(), execvp()
+#include <err.h>    // err()
 
 int main(int argc, char *argv[]) {
     int opt;
@@ -43,9 +44,9 @@ int main(int argc, char *argv[]) {
     setenv("BASEDIR", basedir, 1);
     free(basedir);
 
+
     if (execvp(argv[0], argv) == -1) {
-        perror("execvp()");
-        exit(EXIT_FAILURE);
+        err(EXIT_FAILURE, "execvp()");
     }
 
     return 0;
