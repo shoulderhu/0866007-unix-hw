@@ -1,0 +1,62 @@
+gdb -q ./traceme2
+gef➤  disassemble main
+Dump of assembler code for function main:
+   0x0000000000000824 <+0>:	push   rbp
+   0x0000000000000825 <+1>:	mov    rbp,rsp
+   0x0000000000000828 <+4>:	sub    rsp,0x70
+   0x000000000000082c <+8>:	mov    DWORD PTR [rbp-0x64],edi
+   0x000000000000082f <+11>:	mov    QWORD PTR [rbp-0x70],rsi
+   0x0000000000000833 <+15>:	mov    rax,QWORD PTR fs:0x28
+   0x000000000000083c <+24>:	mov    QWORD PTR [rbp-0x8],rax
+   0x0000000000000840 <+28>:	xor    eax,eax
+   0x0000000000000842 <+30>:	lea    rsi,[rip+0xffffffffffffffa1]        # 0x7ea <handler>
+   0x0000000000000849 <+37>:	mov    edi,0x5
+   0x000000000000084e <+42>:	call   0x650 <signal@plt>
+   0x0000000000000853 <+47>:	mov    edi,0x5
+   0x0000000000000858 <+52>:	call   0x620 <raise@plt>
+   0x000000000000085d <+57>:	lea    rdi,[rip+0x112]        # 0x976
+   0x0000000000000864 <+64>:	call   0x630 <puts@plt>
+   0x0000000000000869 <+69>:	mov    DWORD PTR [rbp-0x54],0x0
+   0x0000000000000870 <+76>:	jmp    0x8a5 <main+129>
+   0x0000000000000872 <+78>:	mov    eax,DWORD PTR [rbp-0x54]
+   0x0000000000000875 <+81>:	mov    edi,eax
+   0x0000000000000877 <+83>:	call   0x78a <f>
+   0x000000000000087c <+88>:	add    eax,0x539
+   0x0000000000000881 <+93>:	movsxd rdx,eax
+   0x0000000000000884 <+96>:	lea    rax,[rip+0x200795]        # 0x201020 <data>
+   0x000000000000088b <+103>:	movzx  eax,BYTE PTR [rdx+rax*1]
+   0x000000000000088f <+107>:	mov    ecx,eax
+   0x0000000000000891 <+109>:	mov    eax,DWORD PTR [rbp-0x54]
+   0x0000000000000894 <+112>:	movsxd rdx,eax
+   0x0000000000000897 <+115>:	lea    rax,[rip+0x2012e2]        # 0x201b80 <output>
+   0x000000000000089e <+122>:	mov    BYTE PTR [rdx+rax*1],cl
+   0x00000000000008a1 <+125>:	add    DWORD PTR [rbp-0x54],0x1
+   0x00000000000008a5 <+129>:	cmp    DWORD PTR [rbp-0x54],0x24
+   0x00000000000008a9 <+133>:	jle    0x872 <main+78>
+   0x00000000000008ab <+135>:	mov    eax,DWORD PTR [rbp-0x54]
+   0x00000000000008ae <+138>:	movsxd rdx,eax
+   0x00000000000008b1 <+141>:	lea    rax,[rip+0x2012c8]        # 0x201b80 <output>
+   0x00000000000008b8 <+148>:	mov    BYTE PTR [rdx+rax*1],0x0
+   0x00000000000008bc <+152>:	mov    eax,0x0
+   0x00000000000008c1 <+157>:	mov    rcx,QWORD PTR [rbp-0x8]
+   0x00000000000008c5 <+161>:	xor    rcx,QWORD PTR fs:0x28
+   0x00000000000008ce <+170>:	je     0x8d5 <main+177>
+   0x00000000000008d0 <+172>:	call   0x640 <__stack_chk_fail@plt>
+   0x00000000000008d5 <+177>:	leave
+   0x00000000000008d6 <+178>:	ret
+End of assembler dump.
+gef➤  break *main + 148
+Breakpoint 1 at 0x8b8: file traceme.c, line 47.
+gef➤  run
+Starting program: /home/shoulderhu/CLionProjects/0866007_unix_hw/0866007_unix_hw4/traceme/traceme2
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+gef➤  continue
+Continuing.
+traced
+
+Breakpoint 1, 0x00005555555548b8 in main (argc=0x1, argv=0x7fffffffdfc8) at traceme.c:47
+gef➤  x/s $rax
+0x555555755b80 <output>:	"ASM{a_Pr0ce55_can_b_trac3d_0n1Y_0nc3}"
+gef➤  print output
+$1 = "ASM{a_Pr0ce55_can_b_trac3d_0n1Y_0nc3}", '\000' <repeats 26 times>
